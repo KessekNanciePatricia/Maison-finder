@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Maison Finder</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <!-- Leaflet (carte) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>🏠 Maison Finder</h1>
+
+        <form method="POST">
+            <input type="text" name="location" placeholder="Entre une ville...">
+            <button type="submit">Rechercher</button>
+        </form>
+
+        {% if result %}
+        <div class="card">
+            {{ result }}
+        </div>
+        {% endif %}
+
+        <!-- 🏠 MAISONS -->
+        <div class="houses">
+
+            <div class="house-card">
+                <img src="https://images.unsplash.com/photo-1568605114967-8130f3a36994" />
+                <p>Maison moderne</p>
+            </div>
+
+            <div class="house-card">
+                <img src="https://images.unsplash.com/photo-1570129477492-45c003edd2be" />
+                <p>Villa élégante</p>
+            </div>
+
+            <div class="house-card">
+                <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c" />
+                <p>Maison familiale</p>
+            </div>
+
+        </div>
+
+        <!-- 🗺️ CARTE -->
+        <div id="map"></div>
+    </div>
+
+    <!-- Script carte -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        var map = L.map('map').setView([4.05, 9.7], 12); // Douala
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        L.marker([4.05, 9.7]).addTo(map)
+            .bindPopup("Maison disponible ici")
+            .openPopup();
+    </script>
+
+</body>
+</html>
