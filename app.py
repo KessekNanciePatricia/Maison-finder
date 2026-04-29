@@ -4,10 +4,7 @@ import sqlite3
 app = Flask(__name__)
 
 # 💾 DATABASE
-def import os
-
-if not os.path.exists("data.db"):
-    init_db():
+def init_db():
     conn = sqlite3.connect("data.db")
     c = conn.cursor()
     c.execute("""
@@ -149,18 +146,15 @@ border-radius:10px;
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
-try {
-    var map = L.map('map').setView([4.05, 9.7], 12);
+var map = L.map('map').setView([4.05, 9.7], 12);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap'
-    }).addTo(map);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+attribution:'© OpenStreetMap'
+}).addTo(map);
 
-    L.marker([4.05, 9.7]).addTo(map)
-        .bindPopup("Maison disponible ici");
-} catch (e) {
-    console.log("Erreur carte :", e);
-}
+L.marker([4.05, 9.7]).addTo(map)
+.bindPopup("Maison disponible ici")
+.openPopup();
 </script>
 
 </body>
@@ -197,8 +191,4 @@ def save():
 
 # 🚀 RUN
 if __name__ == "__main__":
- import os
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=5000)
