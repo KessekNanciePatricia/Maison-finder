@@ -1,10 +1,9 @@
 from flask import Flask, request, render_template_string
 import sqlite3
-import os
 
 app = Flask(__name__)
 
-# 🔥 DATABASE
+# 💾 DATABASE
 def init_db():
     conn = sqlite3.connect("data.db")
     c = conn.cursor()
@@ -22,26 +21,95 @@ def init_db():
 
 init_db()
 
-# 🌐 FRONTEND
+# 🌐 FRONTEND (AMÉLIORÉ)
 html = """
 <!DOCTYPE html>
 <html>
 <head>
 <title>Maison Finder</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
 <style>
-body{font-family:Arial;background:#f4f4f4;padding:30px;}
-.box{max-width:500px;margin:auto;background:white;padding:25px;border-radius:15px;box-shadow:0 0 10px gray;}
-input,select{width:100%;padding:12px;margin:8px 0;}
-button{width:100%;padding:12px;background:green;color:white;border:none;cursor:pointer;}
-h1{text-align:center;}
-a{text-align:center;display:block;margin-top:10px;}
+body{
+font-family:Arial;
+background:linear-gradient(135deg,#74ebd5,#ACB6E5);
+margin:0;
+padding:20px;
+}
+
+.container{
+max-width:900px;
+margin:auto;
+background:white;
+padding:20px;
+border-radius:15px;
+box-shadow:0 5px 20px rgba(0,0,0,0.2);
+}
+
+form{
+margin-bottom:20px;
+}
+
+input,select{
+width:100%;
+padding:10px;
+margin:5px 0;
+border-radius:8px;
+border:1px solid #ccc;
+}
+
+button{
+width:100%;
+padding:10px;
+background:#4CAF50;
+color:white;
+border:none;
+cursor:pointer;
+border-radius:8px;
+}
+
+button:hover{
+background:#45a049;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+gap:10px;
+margin-top:20px;
+}
+
+.card{
+background:#f9f9f9;
+padding:10px;
+border-radius:10px;
+box-shadow:0 3px 10px rgba(0,0,0,0.1);
+}
+
+.card img{
+width:100%;
+height:120px;
+object-fit:cover;
+border-radius:10px;
+}
+
+#map{
+height:250px;
+margin-top:20px;
+border-radius:10px;
+}
 </style>
+
 </head>
+
 <body>
 
-<div class="box">
+<div class="container">
+
 <h1>🏠 Maison Finder</h1>
 
+<!-- FORM -->
 <form action="/save" method="post">
 <input name="nom" placeholder="Nom" required>
 <input name="ville" placeholder="Ville" required>
@@ -57,9 +125,37 @@ a{text-align:center;display:block;margin-top:10px;}
 <button type="submit">Envoyer</button>
 </form>
 
-<a href="/stats">Voir les demandes</a>
+<h2>🏡 Maisons disponibles</h2>
+
+<div class="grid">
+{% for m in data %}
+<div class="card">
+<img src="https://source.unsplash.com/400x300/?house,home,building">
+<h3>{{ m[3] }}</h3>
+<p>👤 {{ m[1] }}</p>
+<p>📍 {{ m[2] }}</p>
+<p>💰 {{ m[3] }}</p>
+</div>
+{% endfor %}
+</div>
+
+<!-- 🗺️ CARTE -->
+<div id="map"></div>
 
 </div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+var map = L.map('map').setView([4.05, 9.7], 12);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+attribution:'© OpenStreetMap'
+}).addTo(map);
+
+L.marker([4.05, 9.7]).addTo(map)
+.bindPopup("Maison disponible ici")
+.openPopup();
+</script>
 
 </body>
 </html>
@@ -68,9 +164,15 @@ a{text-align:center;display:block;margin-top:10px;}
 # 🏠 HOME
 @app.route("/")
 def home():
-    return render_template_string(html)
+    conn = sqlite3.connect("data.db")
+    c = conn.cursor()
+    c.execute("SELECT * FROM demandes ORDER BY id DESC")
+    data = c.fetchall()
+    conn.close()
 
-# 💾 SAVE DATABASE
+    return render_template_string(html, data=data)
+
+# 💾 SAVE
 @app.route("/save", methods=["POST"])
 def save():
     nom = request.form["nom"]
@@ -85,26 +187,8 @@ def save():
     conn.commit()
     conn.close()
 
-    return "<h2>✅ Enregistré avec succès</h2><a href='/'>Retour</a>"
-
-# 📊 STATS
-@app.route("/stats")
-def stats():
-    conn = sqlite3.connect("data.db")
-    c = conn.cursor()
-    c.execute("SELECT * FROM demandes")
-    rows = c.fetchall()
-    conn.close()
-
-    result = "<h2>📊 Demandes</h2>"
-
-    for r in rows:
-        result += f"<p>👤 {r[1]} - {r[2]} - {r[3]} - {r[4]}</p>"
-
-    result += "<br><a href='/'>Retour</a>"
-    return result
-
+    return "<h2>✅ Envoyé avec succès</h2><a href='/'>Retour</a>"
 
 # 🚀 RUN
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5000)
